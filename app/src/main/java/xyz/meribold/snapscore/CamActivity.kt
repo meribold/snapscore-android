@@ -1,10 +1,14 @@
 package xyz.meribold.snapscore
 
+import android.app.Activity
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.provider.MediaStore
 import android.view.View
 import kotlinx.android.synthetic.main.activity_cam.*
+import android.graphics.Bitmap
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -44,6 +48,7 @@ class CamActivity : AppCompatActivity() {
         }
         false
     }
+    private var photo: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +65,10 @@ class CamActivity : AppCompatActivity() {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         dummy_button.setOnTouchListener(mDelayHideTouchListener)
+
+        if (photo == null){
+            snap()
+        }
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -129,5 +138,21 @@ class CamActivity : AppCompatActivity() {
          * and a change of the status and navigation bar.
          */
         private val UI_ANIMATION_DELAY = 300
+    }
+
+    // See <https://developer.android.com/training/camera/photobasics>.
+    private fun snap() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (takePictureIntent.resolveActivity(packageManager) != null) {
+            // ActivityCompat.startActivityForResult(this, takePictureIntent)
+            startActivityForResult(takePictureIntent, 1)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
+            val extras = data!!.extras
+            photo = extras!!.get("data") as Bitmap
+        }
     }
 }
