@@ -144,7 +144,6 @@ class CamActivity : AppCompatActivity() {
     private fun snap() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(packageManager) != null) {
-            // ActivityCompat.startActivityForResult(this, takePictureIntent)
             startActivityForResult(takePictureIntent, 1)
         }
     }
