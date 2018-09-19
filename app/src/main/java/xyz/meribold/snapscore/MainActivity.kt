@@ -7,12 +7,12 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.graphics.Bitmap
 
-class CamActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
     private var photo: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_cam)
+        setContentView(R.layout.activity_main)
         if (photo == null){
             snap()
         }
