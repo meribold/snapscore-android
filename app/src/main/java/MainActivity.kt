@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.graphics.Bitmap
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private var photo: Bitmap? = null
@@ -27,9 +28,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            val extras = data!!.extras
-            photo = extras!!.get("data") as Bitmap
+        assert(requestCode == 1)
+        if (resultCode != Activity.RESULT_OK) {
+            finish()
         }
+        photo = data?.extras?.get("data") as Bitmap?
+        if (photo == null) {
+            finish()
+        }
+        imageView.setImageBitmap(photo)
     }
 }
