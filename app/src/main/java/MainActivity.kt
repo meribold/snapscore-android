@@ -14,7 +14,6 @@ import java.io.IOException
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
-    private var photo: Bitmap? = null
     private var photoRequestMade = false
     private var photoUri: Uri? = null
 
