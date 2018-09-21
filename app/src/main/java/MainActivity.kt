@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         if (takePictureIntent.resolveActivity(packageManager) == null) {
             TODO()
         }
-        var photoFile: File?
+        val photoFile: File?
         try {
             photoFile = File.createTempFile("photo_", ".jpg", getExternalFilesDir(null))
         } catch (e: IOException) {
