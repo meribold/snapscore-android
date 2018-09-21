@@ -2,15 +2,15 @@ package xyz.meribold.snapscore
 
 import android.app.Activity
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
-import android.os.Bundle
-import android.provider.MediaStore
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
+import android.provider.MediaStore
+import android.support.v4.content.FileProvider
+import android.support.v7.app.AppCompatActivity
 import java.io.File
 import java.io.IOException
-import android.support.v4.content.FileProvider
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
