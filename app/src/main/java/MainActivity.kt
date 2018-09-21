@@ -39,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         var photoFile: File?
         try {
             photoFile = File.createTempFile("photo_", ".jpg", getExternalFilesDir(null))
-            // currentPhotoPath = photoFile.absolutePath
         } catch (e: IOException) {
             TODO()
         }
