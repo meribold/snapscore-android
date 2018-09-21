@@ -10,13 +10,20 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private var photo: Bitmap? = null
+    private var photoRequestMade = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (photo == null) {
+        photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
+        if (!photoRequestMade) {
             snap()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("photoRequestMade", photoRequestMade)
     }
 
     // See <https://developer.android.com/training/camera/photobasics>.
@@ -25,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         if (takePictureIntent.resolveActivity(packageManager) != null) {
             startActivityForResult(takePictureIntent, 1)
         }
+        photoRequestMade = true
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
