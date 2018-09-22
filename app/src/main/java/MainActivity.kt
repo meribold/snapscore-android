@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
             TODO()
         }
         try {
-            photoFile = File.createTempFile("photo_", ".jpg", getExternalFilesDir(null))
+            photoFile = File.createTempFile("photo_", ".jpg", getExternalCacheDir())
         } catch (e: IOException) {
             TODO()
         }
