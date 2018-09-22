@@ -19,22 +19,25 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
     private var photoRequestMade = false
     private var photoUri: Uri? = null
+    private var photoFile: File? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
         photoUri = savedInstanceState?.getParcelable("photoUri")
+        photoFile = savedInstanceState?.getSerializable("photoFile") as File?
         if (!photoRequestMade) {
             snap()
         }
-        photoUri?.path?.let { showBitmap(it) }
+        photoFile?.absolutePath?.let { showBitmap(it) }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("photoRequestMade", photoRequestMade)
         outState.putParcelable("photoUri", photoUri)
+        outState.putSerializable("photoFile", photoFile)
     }
 
     // See <https://developer.android.com/training/camera/photobasics>.
@@ -43,7 +46,6 @@ class MainActivity : AppCompatActivity() {
         if (takePictureIntent.resolveActivity(packageManager) == null) {
             TODO()
         }
-        val photoFile: File?
         try {
             photoFile = File.createTempFile("photo_", ".jpg", getExternalFilesDir(null))
         } catch (e: IOException) {
@@ -51,10 +53,11 @@ class MainActivity : AppCompatActivity() {
         }
         // See <https://stackoverflow.com/a/44212615>.
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-            photoUri = Uri.fromFile(photoFile)
+            photoUri = Uri.fromFile(photoFile!!)
         } else {
+            // TODO: will this work on Android 5.0?
             photoUri = FileProvider.getUriForFile(this,
-                "xyz.meribold.snapscore.fileprovider", photoFile)
+                "xyz.meribold.snapscore.fileprovider", photoFile!!)
         }
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
         startActivityForResult(takePictureIntent, 1)
@@ -74,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         if (photoUri == null) {
             finish()
         }
-        photoUri?.path?.let { showBitmap(it) }
+        photoFile?.absolutePath?.let { showBitmap(it) }
     }
 }
 
