@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         if (!photoRequestMade) {
             snap()
         }
+        photoUri?.path?.let { showBitmap(it) }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -60,6 +61,11 @@ class MainActivity : AppCompatActivity() {
         photoRequestMade = true
     }
 
+    private fun showBitmap(path: String) {
+        val bitmap: Bitmap? = BitmapFactory.decodeFile(path)
+        bitmap?.let { imageView.setImageBitmap(fixBitmapOrientation(it, path)) }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         assert(requestCode == 1)
         if (resultCode != Activity.RESULT_OK) {
@@ -68,12 +74,11 @@ class MainActivity : AppCompatActivity() {
         if (photoUri == null) {
             finish()
         }
-        val bitmap = BitmapFactory.decodeFile(photoUri!!.getPath())
-        imageView.setImageBitmap(fixBitmapOrientation(bitmap))
+        photoUri?.path?.let { showBitmap(it) }
     }
 
-    private fun fixBitmapOrientation(bitmap: Bitmap): Bitmap {
-        val exif = ExifInterface(photoUri!!.path)
+    private fun fixBitmapOrientation(bitmap: Bitmap, path: String): Bitmap {
+        val exif = ExifInterface(path)
         val orientation: Int = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
                                                     ExifInterface.ORIENTATION_NORMAL)
         return when (orientation) {
