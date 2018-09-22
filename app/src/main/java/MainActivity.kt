@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
+        photoUri = savedInstanceState?.getParcelable("photoUri")
         if (!photoRequestMade) {
             snap()
         }
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("photoRequestMade", photoRequestMade)
+        outState.putParcelable("photoUri", photoUri)
     }
 
     // See <https://developer.android.com/training/camera/photobasics>.
