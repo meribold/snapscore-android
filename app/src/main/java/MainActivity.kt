@@ -76,22 +76,22 @@ class MainActivity : AppCompatActivity() {
         }
         photoUri?.path?.let { showBitmap(it) }
     }
+}
 
-    private fun fixBitmapOrientation(bitmap: Bitmap, path: String): Bitmap {
-        val exif = ExifInterface(path)
-        val orientation: Int = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                                                    ExifInterface.ORIENTATION_NORMAL)
-        return when (orientation) {
-            ExifInterface.ORIENTATION_ROTATE_90  -> rotateBitmap(bitmap, 90f)
-            ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
-            ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
-                                            else -> bitmap
-        }
+private fun fixBitmapOrientation(bitmap: Bitmap, path: String): Bitmap {
+    val exif = ExifInterface(path)
+    val orientation: Int = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                                                ExifInterface.ORIENTATION_NORMAL)
+    return when (orientation) {
+        ExifInterface.ORIENTATION_ROTATE_90  -> rotateBitmap(bitmap, 90f)
+        ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
+        ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
+                                        else -> bitmap
     }
+}
 
-    private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
-        val matrix = Matrix()
-        matrix.postRotate(degrees)
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-    }
+private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
+    val matrix = Matrix()
+    matrix.postRotate(degrees)
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
 }
