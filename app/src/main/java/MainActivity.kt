@@ -40,7 +40,6 @@ class MainActivity : AppCompatActivity() {
         outState.putSerializable("photoFile", photoFile)
     }
 
-    // See <https://developer.android.com/training/camera/photobasics>.
     private fun snap() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(packageManager) == null) {
@@ -56,6 +55,8 @@ class MainActivity : AppCompatActivity() {
         }
         // See <https://stackoverflow.com/a/44212615>.
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+            // I think this should work up to, but not on, Android 7.0.  See [1].  We only
+            // do things this way on Android 4.4, though.
             photoUri = Uri.fromFile(photoFile!!)
         } else {
             // This seems to work on Android 5.0 (API 21).
@@ -66,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(takePictureIntent, 1)
         photoRequestMade = true
     }
+    // [1]: https://developer.android.com/training/camera/photobasics
 
     private fun showBitmap(path: String) {
         val bitmap: Bitmap? = BitmapFactory.decodeFile(path)
