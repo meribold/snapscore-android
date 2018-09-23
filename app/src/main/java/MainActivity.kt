@@ -46,10 +46,13 @@ class MainActivity : AppCompatActivity() {
         if (takePictureIntent.resolveActivity(packageManager) == null) {
             TODO()
         }
-        try {
-            photoFile = File.createTempFile("photo_", ".jpg", getExternalCacheDir())
-        } catch (e: IOException) {
-            TODO()
+        photoFile = File(getExternalCacheDir(), "photo.jpg").apply {
+            try {
+                // If the file already exists, this returns `false`.  We don't care.
+                createNewFile()
+            } catch (e: IOException) {
+                TODO()
+            }
         }
         // See <https://stackoverflow.com/a/44212615>.
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
