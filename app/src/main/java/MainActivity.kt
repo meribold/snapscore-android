@@ -88,13 +88,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         assert(requestCode == 1)
+        assert(photoUri != null)
         if (resultCode != Activity.RESULT_OK) {
-            finish()
+            Toast.makeText(getApplicationContext(), "Failed to get a photo.",
+                           Toast.LENGTH_LONG).show()
+        } else {
+            photoFile?.absolutePath?.let { showBitmap(it) }
         }
-        if (photoUri == null) {
-            finish()
-        }
-        photoFile?.absolutePath?.let { showBitmap(it) }
     }
 }
 
