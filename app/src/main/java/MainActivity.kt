@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
+import android.widget.Toast
 import java.io.File
 import java.io.IOException
 import kotlinx.android.synthetic.main.activity_main.*
@@ -26,11 +27,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
         photoUri = savedInstanceState?.getParcelable("photoUri")
-        photoFile = savedInstanceState?.getSerializable("photoFile") as File?
-        if (!photoRequestMade) {
+        photoFile = savedInstanceState?.getSerializable("photoFile") as File? ?:
+                    createPhotoFile()
+        if (photoFile != null && !photoRequestMade) {
             snap()
+        } else {
+            photoFile?.absolutePath?.let { showBitmap(it) }
         }
-        photoFile?.absolutePath?.let { showBitmap(it) }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -40,18 +43,27 @@ class MainActivity : AppCompatActivity() {
         outState.putSerializable("photoFile", photoFile)
     }
 
+    private fun createPhotoFile(): File? {
+        val file: File = File(getExternalCacheDir(), "photo.jpg")
+        try {
+            // If the file already exists, this returns `false`.  That's fine, though.
+            file.createNewFile()
+        } catch (e: IOException) {
+            Toast.makeText(getApplicationContext(), "Creating file for photo failed.",
+                           Toast.LENGTH_LONG).show()
+            return null
+        } catch (e: SecurityException) {
+            Toast.makeText(getApplicationContext(), "Creating file for photo was denied.",
+                           Toast.LENGTH_LONG).show()
+            return null
+        }
+        return file
+    }
+
     private fun snap() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(packageManager) == null) {
             TODO()
-        }
-        photoFile = File(getExternalCacheDir(), "photo.jpg").apply {
-            try {
-                // If the file already exists, this returns `false`.  We don't care.
-                createNewFile()
-            } catch (e: IOException) {
-                TODO()
-            }
         }
         // See <https://stackoverflow.com/a/44212615>.
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
