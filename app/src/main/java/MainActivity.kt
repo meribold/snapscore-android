@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
             photoUri = Uri.fromFile(photoFile!!)
         } else {
-            // TODO: will this work on Android 5.0?
+            // This seems to work on Android 5.0 (API 21).
             photoUri = FileProvider.getUriForFile(this,
                 "xyz.meribold.snapscore.fileprovider", photoFile!!)
         }
