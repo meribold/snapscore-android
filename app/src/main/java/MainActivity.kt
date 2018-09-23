@@ -83,7 +83,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun showBitmap(path: String) {
         val bitmap: Bitmap? = BitmapFactory.decodeFile(path)
-        bitmap?.let { imageView.setImageBitmap(fixBitmapOrientation(it, path)) }
+        if (bitmap == null) {
+            Toast.makeText(getApplicationContext(), "Decoding bitmap failed.",
+                           Toast.LENGTH_LONG).show()
+        } else {
+            imageView.setImageBitmap(fixBitmapOrientation(bitmap, path))
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
