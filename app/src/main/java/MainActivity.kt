@@ -71,7 +71,9 @@ class MainActivity : AppCompatActivity() {
             // do things this way on Android 4.4, though.
             photoUri = Uri.fromFile(photoFile!!)
         } else {
-            // This seems to work on Android 5.0 (API 21).
+            // This seems to work on Android 5.0 (API 21).  I thought it may not because
+            // the docs for `FileProvider` say "added in version 22.1.0".  I guess that
+            // doesn't refer to the API level.
             photoUri = FileProvider.getUriForFile(this,
                 "xyz.meribold.snapscore.fileprovider", photoFile!!)
         }
