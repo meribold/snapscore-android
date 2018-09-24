@@ -40,11 +40,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
-        camFab.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(view: View) {
-                snap()
-            }
-        })
+        camFab.setOnClickListener { snap() }
     }
 
     override fun onStart() {
