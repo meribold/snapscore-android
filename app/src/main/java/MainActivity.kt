@@ -13,6 +13,7 @@ import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
+import android.view.View
 import android.widget.Toast
 import java.io.File
 import java.io.IOException
@@ -39,6 +40,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
+        camFab.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(view: View) {
+                snap()
+            }
+        })
     }
 
     override fun onStart() {
