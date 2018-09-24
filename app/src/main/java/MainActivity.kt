@@ -39,6 +39,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
+    }
+
+    override fun onStart() {
+        super.onStart()
         if (!photoRequestMade) {
             snap()
         } else {
@@ -118,8 +122,6 @@ class MainActivity : AppCompatActivity() {
         if (resultCode != Activity.RESULT_OK) {
             Toast.makeText(getApplicationContext(), "Failed to get a photo.",
                            Toast.LENGTH_LONG).show()
-        } else {
-            showBitmap(photoFile.absolutePath)
         }
     }
 }
