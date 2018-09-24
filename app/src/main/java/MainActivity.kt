@@ -20,42 +20,35 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private var photoRequestMade = false
-    private var photoFile: File? = null
+    private val photoFile: File by lazy {
+        File(getExternalCacheDir(), "photo.jpg").also {
+            try {
+                // If the file already exists, this returns `false`.  That's fine, though.
+                it.createNewFile()
+            } catch (e: IOException) {
+                Toast.makeText(getApplicationContext(), "Creating file for photo failed.",
+                               Toast.LENGTH_LONG).show()
+            } catch (e: SecurityException) {
+                Toast.makeText(getApplicationContext(), "Creating file for photo was " +
+                               "denied.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
-        photoFile = savedInstanceState?.getSerializable("photoFile") as File? ?:
-                    createPhotoFile()
-        if (photoFile != null && !photoRequestMade) {
+        if (!photoRequestMade) {
             snap()
         } else {
-            photoFile?.absolutePath?.let { showBitmap(it) }
+            showBitmap(photoFile.absolutePath)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("photoRequestMade", photoRequestMade)
-        outState.putSerializable("photoFile", photoFile)
-    }
-
-    private fun createPhotoFile(): File? {
-        val file: File = File(getExternalCacheDir(), "photo.jpg")
-        try {
-            // If the file already exists, this returns `false`.  That's fine, though.
-            file.createNewFile()
-        } catch (e: IOException) {
-            Toast.makeText(getApplicationContext(), "Creating file for photo failed.",
-                           Toast.LENGTH_LONG).show()
-            return null
-        } catch (e: SecurityException) {
-            Toast.makeText(getApplicationContext(), "Creating file for photo was denied.",
-                           Toast.LENGTH_LONG).show()
-            return null
-        }
-        return file
     }
 
     private fun snap() {
@@ -64,16 +57,16 @@ class MainActivity : AppCompatActivity() {
             TODO()
         }
         // See <https://stackoverflow.com/a/44212615>.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+        val photoUri: Uri = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
             // I think this should work up to, but not on, Android 7.0.  See [1].  We only
             // do things this way on Android 4.4, though.
-            photoUri = Uri.fromFile(photoFile!!)
+            Uri.fromFile(photoFile)
         } else {
             // This seems to work on Android 5.0 (API 21).  I thought it may not because
             // the docs for `FileProvider` say "added in version 22.1.0".  I guess that
             // doesn't refer to the API level.
-            photoUri = FileProvider.getUriForFile(this,
-                "xyz.meribold.snapscore.fileprovider", photoFile!!)
+            FileProvider.getUriForFile(this, "xyz.meribold.snapscore.fileprovider",
+                                       photoFile)
         }
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
         startActivityForResult(takePictureIntent, 1)
@@ -126,7 +119,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(getApplicationContext(), "Failed to get a photo.",
                            Toast.LENGTH_LONG).show()
         } else {
-            photoFile?.absolutePath?.let { showBitmap(it) }
+            showBitmap(photoFile.absolutePath)
         }
     }
 }
