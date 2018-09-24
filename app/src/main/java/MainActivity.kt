@@ -20,14 +20,12 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private var photoRequestMade = false
-    private var photoUri: Uri? = null
     private var photoFile: File? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
-        photoUri = savedInstanceState?.getParcelable("photoUri")
         photoFile = savedInstanceState?.getSerializable("photoFile") as File? ?:
                     createPhotoFile()
         if (photoFile != null && !photoRequestMade) {
@@ -40,7 +38,6 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("photoRequestMade", photoRequestMade)
-        outState.putParcelable("photoUri", photoUri)
         outState.putSerializable("photoFile", photoFile)
     }
 
@@ -125,7 +122,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         assert(requestCode == 1)
-        assert(photoUri != null)
         if (resultCode != Activity.RESULT_OK) {
             Toast.makeText(getApplicationContext(), "Failed to get a photo.",
                            Toast.LENGTH_LONG).show()
