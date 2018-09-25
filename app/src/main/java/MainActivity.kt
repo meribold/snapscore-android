@@ -17,6 +17,7 @@ import android.view.View
 import android.widget.Toast
 import java.io.File
 import java.io.IOException
+import java.lang.ref.WeakReference
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -124,6 +125,8 @@ class MainActivity : AppCompatActivity() {
         if (resultCode != Activity.RESULT_OK) {
             Toast.makeText(getApplicationContext(), "Failed to get a photo.",
                            Toast.LENGTH_LONG).show()
+        } else {
+            NetworkTask(WeakReference(this)).execute(photoFile)
         }
     }
 }
