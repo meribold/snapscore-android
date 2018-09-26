@@ -1,12 +1,13 @@
 package xyz.meribold.snapscore
 
-import android.content.Context
+import android.app.Activity
 import android.os.AsyncTask
 import android.widget.Toast
 import java.io.File
 import java.lang.ref.WeakReference
+import kotlinx.android.synthetic.main.activity_main.*
 
-class NetworkTask(val contextRef: WeakReference<Context>) : AsyncTask<File, Unit, Int>() {
+class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, Int>() {
     // This runs in the UI thread.
     override fun onPreExecute() {}
 
@@ -18,14 +19,7 @@ class NetworkTask(val contextRef: WeakReference<Context>) : AsyncTask<File, Unit
 
     // This runs in the UI thread and gets the result of the background task.
     override fun onPostExecute(score: Int?) {
-        contextRef.get()?.let {
-            val text = if (score != null) {
-                "Your score is $score."
-            } else {
-                "Something went wrong."
-            }
-            Toast.makeText(it.applicationContext, text, Toast.LENGTH_LONG).show()
-        }
+        actRef.get()?.scoreTV?.text = "$score"
     }
 }
 

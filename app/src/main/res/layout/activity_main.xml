@@ -31,7 +31,6 @@
         android:id="@+id/scoreTV"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="42"
         android:textAlignment="center"
         android:textSize="44sp"
         android:textStyle="bold"

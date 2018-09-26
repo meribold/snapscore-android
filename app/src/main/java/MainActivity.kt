@@ -41,6 +41,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
+        if (savedInstanceState?.containsKey("score") == true) {
+            scoreTV.text = "${savedInstanceState.getInt("score")}"
+        }
         camFab.setOnClickListener { snap() }
     }
 
@@ -56,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("photoRequestMade", photoRequestMade)
+        scoreTV.text.toString().toIntOrNull()?.let { outState.putInt("score", it) }
     }
 
     private fun snap() {
@@ -126,6 +130,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(getApplicationContext(), "Failed to get a photo.",
                            Toast.LENGTH_LONG).show()
         } else {
+            scoreTV.text = null
             NetworkTask(WeakReference(this)).execute(photoFile)
         }
     }
