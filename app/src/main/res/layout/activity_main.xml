@@ -27,4 +27,20 @@
         app:maxImageSize="36dp"
         app:srcCompat="@android:drawable/ic_menu_camera" />
 
+    <TextView
+        android:id="@+id/scoreTV"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="42"
+        android:textAlignment="center"
+        android:textSize="44sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:shadowColor="@android:color/black"
+        android:shadowRadius="20"
+        app:layout_constraintBottom_toBottomOf="@+id/camFab"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/camFab" />
+
 </android.support.constraint.ConstraintLayout>
