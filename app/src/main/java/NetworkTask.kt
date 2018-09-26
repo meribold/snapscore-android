@@ -2,7 +2,6 @@ package xyz.meribold.snapscore
 
 import android.app.Activity
 import android.os.AsyncTask
-import android.widget.Toast
 import java.io.File
 import java.lang.ref.WeakReference
 import kotlinx.android.synthetic.main.activity_main.*
