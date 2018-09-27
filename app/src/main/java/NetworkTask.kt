@@ -2,9 +2,9 @@ package xyz.meribold.snapscore
 
 import android.app.Activity
 import android.os.AsyncTask
-import java.io.File
+import android.widget.Toast
+import java.io.*
 import java.lang.ref.WeakReference
-import java.io.IOException
 import java.net.Socket
 import java.net.UnknownHostException
 import kotlinx.android.synthetic.main.activity_main.*
@@ -14,25 +14,85 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, I
     override fun onPreExecute() {}
 
     // This runs in the background thread.
-    override fun doInBackground(vararg image: File): Int? {
-        // Create a TCP socket and connect.
-        try {
-            val socket = Socket("192.168.168.75", 50007)
-        } catch (e: UnknownHostException) {
+    override fun doInBackground(vararg params: File): Int? {
+        if (params.size != 1) {
             return -1
-        } catch (e: IOException) {
-            return -2
-        } catch (e: SecurityException) {
-            return -3
-        } catch (e: IllegalArgumentException) {
-            return -4
         }
-        return 42
+        val image: File = params[0]
+        // Create a TCP socket and connect.
+        val socket = try {
+            Socket("192.168.168.75", 50007)
+        } catch (e: UnknownHostException) {
+            return -2
+        } catch (e: IOException) {
+            return -3
+        } catch (e: SecurityException) {
+            return -4
+        } catch (e: IllegalArgumentException) {
+            return -5
+        }
+
+        val oStream = try {
+            DataOutputStream(socket.getOutputStream())
+        } catch (e: IOException) {
+            return -6
+        }
+
+        val iStream = try {
+            DataInputStream(socket.getInputStream())
+        } catch (e: IOException) {
+            return -7
+        }
+
+        val fileName = image.name.toByteArray(Charsets.UTF_8)
+        oStream.writeInt(fileName.size)
+        oStream.write(fileName)
+        oStream.flush()
+
+        oStream.writeInt(image.length().toInt())
+        val imageStream = FileInputStream(image)
+        val buffer = ByteArray(4096)
+        var numBytesRead: Int
+        while (true) {
+            numBytesRead = imageStream.read(buffer)
+            if (numBytesRead == -1) {
+                break
+            }
+            oStream.write(buffer, 0, numBytesRead)
+        }
+        oStream.flush()
+
+        val score: Int = try {
+            iStream.readInt()
+        } catch (e: EOFException) {
+            return -8
+        } catch (e: IOException) {
+            return -9
+        }
+
+        // "Closing the [...] OutputStream will close the associated socket." [8].
+        oStream.close()
+        iStream.close()
+        imageStream.close()
+
+        return score
     }
 
     // This runs in the UI thread and gets the result of the background task.
     override fun onPostExecute(score: Int?) {
-        actRef.get()?.scoreTV?.text = "$score"
+        actRef.get()?.let {
+            if (score == null || score < 0) {
+                Toast.makeText(it.applicationContext, "Something went wrong.",
+                               Toast.LENGTH_LONG).show()
+                if (score != null) {
+                    it.scoreTV?.text = "?".repeat(-score)
+                } else {
+                    it.scoreTV?.text = "?!"
+                }
+            } else {
+                it.scoreTV?.text = "$score"
+            }
+        }
     }
 }
 
@@ -44,3 +104,4 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, I
 // [6]: https://codereview.stackexchange.com/q/175340
 //      "Updating the UI without leaking the context after an Android AsyncTask finishes"
 // [7]: https://developer.android.com/reference/java/lang/ref/WeakReference
+// [8]: https://developer.android.com/reference/kotlin/java/net/Socket#getOutputStream%28%29
