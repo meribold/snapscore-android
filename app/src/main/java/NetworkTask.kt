@@ -44,11 +44,6 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, I
             return -7
         }
 
-        val fileName = image.name.toByteArray(Charsets.UTF_8)
-        oStream.writeInt(fileName.size)
-        oStream.write(fileName)
-        oStream.flush()
-
         oStream.writeInt(image.length().toInt())
         val imageStream = FileInputStream(image)
         val buffer = ByteArray(4096)
