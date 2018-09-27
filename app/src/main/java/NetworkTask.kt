@@ -21,7 +21,7 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, I
         val image: File = params[0]
         // Create a TCP socket and connect.
         val socket = try {
-            Socket("192.168.168.75", 50007)
+            Socket("snapscore.meribold.xyz", 50007)
         } catch (e: UnknownHostException) {
             return -2
         } catch (e: IOException) {
