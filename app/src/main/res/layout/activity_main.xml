@@ -44,4 +44,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/camFab" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/scoreTV"
+        app:layout_constraintEnd_toEndOf="@+id/scoreTV"
+        app:layout_constraintStart_toStartOf="@+id/scoreTV"
+        app:layout_constraintTop_toTopOf="@+id/scoreTV" />
+
 </android.support.constraint.ConstraintLayout>

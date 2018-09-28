@@ -2,6 +2,8 @@ package xyz.meribold.snapscore
 
 import android.app.Activity
 import android.os.AsyncTask
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.widget.Toast
 import java.io.*
 import java.lang.ref.WeakReference
@@ -11,7 +13,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, Int>() {
     // This runs in the UI thread.
-    override fun onPreExecute() {}
+    override fun onPreExecute() {
+        actRef.get()?.progressBar?.visibility = VISIBLE
+    }
 
     // This runs in the background thread.
     override fun doInBackground(vararg params: File): Int? {
@@ -73,9 +77,14 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, I
         return score
     }
 
+    override fun onCancelled(score: Int?) {
+        actRef.get()?.progressBar?.visibility = GONE
+    }
+
     // This runs in the UI thread and gets the result of the background task.
     override fun onPostExecute(score: Int?) {
         actRef.get()?.let {
+            it.progressBar?.visibility = GONE
             if (score == null || score < 0) {
                 Toast.makeText(it.applicationContext, "Something went wrong.",
                                Toast.LENGTH_LONG).show()
