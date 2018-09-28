@@ -13,7 +13,6 @@ import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
-import android.view.View
 import android.widget.Toast
 import java.io.File
 import java.io.IOException
@@ -23,16 +22,16 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
     private var photoRequestMade = false
     private val photoFile: File by lazy {
-        File(getExternalCacheDir(), "photo.jpg").also {
+        File(externalCacheDir, "photo.jpg").also {
             try {
                 // If the file already exists, this returns `false`.  That's fine, though.
                 it.createNewFile()
             } catch (e: IOException) {
-                Toast.makeText(getApplicationContext(), "Creating file for photo failed.",
+                Toast.makeText(applicationContext, "Creating file for photo failed.",
                                Toast.LENGTH_LONG).show()
             } catch (e: SecurityException) {
-                Toast.makeText(getApplicationContext(), "Creating file for photo was " +
-                               "denied.", Toast.LENGTH_LONG).show()
+                Toast.makeText(applicationContext, "Creating file for photo was denied.",
+                               Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -111,7 +110,7 @@ class MainActivity : AppCompatActivity() {
         options.inJustDecodeBounds = false
         val bitmap: Bitmap? = BitmapFactory.decodeFile(path, options)
         if (bitmap == null) {
-            Toast.makeText(getApplicationContext(), "Decoding bitmap failed.",
+            Toast.makeText(applicationContext, "Decoding bitmap failed.",
                            Toast.LENGTH_LONG).show()
         } else {
             imageView.setImageBitmap(when (orientation) {
@@ -127,7 +126,7 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         assert(requestCode == 1)
         if (resultCode != Activity.RESULT_OK) {
-            Toast.makeText(getApplicationContext(), "Failed to get a photo.",
+            Toast.makeText(applicationContext, "Failed to get a photo.",
                            Toast.LENGTH_LONG).show()
         } else {
             scoreTV.text = null
