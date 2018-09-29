@@ -9,9 +9,10 @@ import java.io.*
 import java.lang.ref.WeakReference
 import java.net.Socket
 import java.net.UnknownHostException
+import kotlin.math.roundToInt
 import kotlinx.android.synthetic.main.activity_main.*
 
-class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, Int>() {
+class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Int, Int>() {
     // This runs in the UI thread.
     override fun onPreExecute() {
         actRef.get()?.progressBar?.visibility = VISIBLE
@@ -48,18 +49,30 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, I
             return -7
         }
 
-        oStream.writeInt(image.length().toInt())
+        val numBytes: Int = image.length().toInt()
+        oStream.writeInt(numBytes)
+
         val imageStream = FileInputStream(image)
         val buffer = ByteArray(4096)
-        var numBytesRead: Int
+        var totalBytesRead: Int = 0
+        var progress: Int = 0
+        publishProgress(0)
         while (true) {
-            numBytesRead = imageStream.read(buffer)
+            val numBytesRead: Int = imageStream.read(buffer)
             if (numBytesRead == -1) {
                 break
             }
             oStream.write(buffer, 0, numBytesRead)
+            totalBytesRead += numBytesRead
+            val new_progress = (100.0f * totalBytesRead / numBytes).roundToInt()
+            if (new_progress != progress) {
+                progress = new_progress
+                // "This method may take several seconds to complete [...]." [9]  What?!
+                publishProgress(progress)
+            }
         }
         oStream.flush()
+        publishProgress(-1)
 
         val score: Int = try {
             iStream.readInt()
@@ -75,6 +88,20 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, I
         imageStream.close()
 
         return score
+    }
+
+    override fun onProgressUpdate(vararg values: Int?) {
+        val progress = values[0]
+        if (progress == null) {
+            return
+        }
+        actRef.get()?.progressBar?.apply {
+            when (progress) {
+                0 -> setIndeterminate(false)
+                -1 -> setIndeterminate(true)
+            }
+            setProgress(progress)
+        }
     }
 
     override fun onCancelled(score: Int?) {
@@ -109,3 +136,4 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Unit, I
 //      "Updating the UI without leaking the context after an Android AsyncTask finishes"
 // [7]: https://developer.android.com/reference/java/lang/ref/WeakReference
 // [8]: https://developer.android.com/reference/kotlin/java/net/Socket#getOutputStream%28%29
+// [9]: https://developer.android.com/reference/android/os/AsyncTask.html#publishProgress(Progress...)
