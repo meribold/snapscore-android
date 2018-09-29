@@ -91,10 +91,7 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Int, In
     }
 
     override fun onProgressUpdate(vararg values: Int?) {
-        val progress = values[0]
-        if (progress == null) {
-            return
-        }
+        val progress = values[0] ?: return
         actRef.get()?.progressBar?.apply {
             when (progress) {
                 0 -> setIndeterminate(false)
