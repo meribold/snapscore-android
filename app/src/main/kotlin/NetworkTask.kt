@@ -65,7 +65,11 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Int, In
         }
 
         val numBytes: Int = image.length().toInt()
-        oStream.writeInt(numBytes)
+        try {
+            oStream.writeInt(numBytes)
+        } catch (e: IOException) {
+            return -11
+        }
 
         val imageStream = FileInputStream(image)
         val buffer = ByteArray(4096)
@@ -77,7 +81,11 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Int, In
             if (numBytesRead == -1) {
                 break
             }
-            oStream.write(buffer, 0, numBytesRead)
+            try {
+                oStream.write(buffer, 0, numBytesRead)
+            } catch (e: IOException) {
+                return -12
+            }
             totalBytesRead += numBytesRead
             val new_progress = (100.0f * totalBytesRead / numBytes).roundToInt()
             if (new_progress != progress) {
