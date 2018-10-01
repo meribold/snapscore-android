@@ -7,8 +7,10 @@ import android.view.View.VISIBLE
 import android.widget.Toast
 import java.io.*
 import java.lang.ref.WeakReference
-import java.net.Socket
 import java.net.UnknownHostException
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.SSLSocketFactory
 import kotlin.math.roundToInt
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -24,9 +26,15 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Int, In
             return -1
         }
         val image: File = params[0]
-        // Create a TCP socket and connect.
-        val socket = try {
-            Socket("snapscore.meribold.xyz", 50007)
+
+        // Create a TCP socket that uses SSL/TLS and connect to "snapscore.meribold.xyz".
+        // Based on [10].
+        val socket: SSLSocket = try {
+            SSLSocketFactory.getDefault().run {
+                // This is the `createSocket` member function inherited from
+                // `SocketFactory` [11].
+                createSocket("snapscore.meribold.xyz", 50007) as SSLSocket
+            }
         } catch (e: UnknownHostException) {
             return -2
         } catch (e: IOException) {
@@ -35,6 +43,13 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Int, In
             return -4
         } catch (e: IllegalArgumentException) {
             return -5
+        }
+        // Verify that the certificate we got is actually for "snapscore.meribold.xyz", I
+        // think.
+        HttpsURLConnection.getDefaultHostnameVerifier().run {
+            if (!verify("snapscore.meribold.xyz", socket.session)) {
+                return -10
+            }
         }
 
         val oStream = try {
@@ -134,3 +149,5 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Int, In
 // [7]: https://developer.android.com/reference/java/lang/ref/WeakReference
 // [8]: https://developer.android.com/reference/kotlin/java/net/Socket#getOutputStream%28%29
 // [9]: https://developer.android.com/reference/android/os/AsyncTask.html#publishProgress(Progress...)
+// [10]: https://developer.android.com/training/articles/security-ssl#WarningsSslSocket
+// [11]: https://developer.android.com/reference/kotlin/javax/net/SocketFactory#createsocket_1
