@@ -1,6 +1,8 @@
 package xyz.meribold.snapscore
 
 import android.app.Activity
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -13,6 +15,8 @@ import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.widget.Toast
 import java.io.File
 import java.io.IOException
@@ -20,7 +24,10 @@ import java.lang.ref.WeakReference
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+    // Did we request taking a photo at least once since the app was started?
     private var photoRequestMade = false
+    // Did we get any photo since the app was started?
+    private var newPhotoReceived = false
     private val photoFile: File by lazy {
         File(externalCacheDir, "photo.jpg").also {
             try {
@@ -35,29 +42,77 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    private val model: MainViewModel by lazy {
+        // See [2].  This gives us back the same `ViewModel` object we used to have if the
+        // activity is recreated after configuration changes and such stuff.
+        ViewModelProviders.of(this).get(MainViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
+        if (!photoRequestMade) {
+            // Do this as early as possible because it may result in the activity being
+            // destroyed.  In this case, `onCreate` will be called again and everything we
+            // did so far was redundant.
+            snap()
+        }
+        newPhotoReceived = savedInstanceState?.getBoolean("newPhotoReceived") ?: false
+        setContentView(R.layout.activity_main)
         if (savedInstanceState?.containsKey("score") == true) {
+            // This requires that we already called `setContentView`.  Else we can't use
+            // `scoreTV` etc.
             scoreTV.text = "${savedInstanceState.getInt("score")}"
         }
+        // "If LiveData already has data set, it will be delivered to the observer." [3]
+        model.scoringPhase.observe(this, Observer { phase ->
+            when (phase) {
+                ScoringPhase.INACTIVE -> {
+                    progressBar.visibility = GONE
+                }
+                ScoringPhase.CONNECTING -> {
+                    progressBar.setIndeterminate(true)
+                    progressBar.visibility = VISIBLE
+                }
+                ScoringPhase.UPLOADING -> {
+                    progressBar.setIndeterminate(false)
+                    progressBar.visibility = VISIBLE
+                }
+                ScoringPhase.AWAITING -> {
+                    progressBar.setIndeterminate(true)
+                    progressBar.visibility = VISIBLE
+                }
+            }
+        })
+        model.progress.observe(this, Observer { progress ->
+            if (progress != null) {
+                progressBar.progress = progress
+            }
+        })
+        model.score.observe(this, Observer { score ->
+            when (score) {
+                null -> scoreTV.text = null
+                else -> scoreTV.text = "$score"
+            }
+        })
         camFab.setOnClickListener { snap() }
     }
 
     override fun onStart() {
         super.onStart()
-        if (!photoRequestMade) {
-            snap()
-        } else {
+        if (photoRequestMade) {
             showBitmap(photoFile.absolutePath)
         }
     }
 
+    // We still need saved instance state despite also using a `ViewModel`.  Our process
+    // may be killed by the system causing all the data in the `ViewModel` to be lost.
+    // The fact that this happened should not be visible to the user, though, and saved
+    // instance state is one way to recover.  See [4] for more information.
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("photoRequestMade", photoRequestMade)
+        outState.putBoolean("newPhotoReceived", newPhotoReceived)
         scoreTV.text.toString().toIntOrNull()?.let { outState.putInt("score", it) }
     }
 
@@ -79,8 +134,10 @@ class MainActivity : AppCompatActivity() {
                                        photoFile)
         }
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
-        startActivityForResult(takePictureIntent, 1)
         photoRequestMade = true
+        // It may be best to have `startActivityForResult` be the last thing we do,
+        // because maybe we can be killed as soon as we call it?
+        startActivityForResult(takePictureIntent, 1)
     }
     // [1]: https://developer.android.com/training/camera/photobasics
 
@@ -126,13 +183,24 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         assert(requestCode == 1)
         if (resultCode != Activity.RESULT_OK) {
-            Toast.makeText(applicationContext, "Failed to get a photo.",
-                           Toast.LENGTH_LONG).show()
+            // The back button was probably pressed while the camera activity was active.
+            if (!newPhotoReceived) {
+                // If the app was freshly started and no photo was taken yet, the user
+                // never saw this activity and it makes no sense to "return" to it.  We
+                // close the app in this case.
+                finish()
+            } else {
+                Toast.makeText(applicationContext, "Failed to get a photo.",
+                               Toast.LENGTH_LONG).show()
+            }
         } else {
-            scoreTV.text = null
-            NetworkTask(WeakReference(this)).execute(photoFile)
+            newPhotoReceived = true
+            model.score.value = null
+            kickOffScoring()
         }
     }
+
+    private fun kickOffScoring() = NetworkTask(WeakReference(model)).execute(photoFile)
 }
 
 private fun getImageOrientation(path: String): Int =
@@ -165,3 +233,6 @@ fun calculateInSampleSize(width: Int, height: Int, availableWidth: Int,
     return inSampleSize
 }
 // [1]: https://developer.android.com/topic/performance/graphics/load-bitmap
+// [2]: https://developer.android.com/topic/libraries/architecture/viewmodel
+// [3]: https://developer.android.com/reference/android/arch/lifecycle/LiveData.html#observe
+// [4]: https://developer.android.com/topic/libraries/architecture/saving-states

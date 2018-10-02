@@ -1,10 +1,6 @@
 package xyz.meribold.snapscore
 
-import android.app.Activity
 import android.os.AsyncTask
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import android.widget.Toast
 import java.io.*
 import java.lang.ref.WeakReference
 import java.net.UnknownHostException
@@ -12,12 +8,14 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocket
 import javax.net.ssl.SSLSocketFactory
 import kotlin.math.roundToInt
-import kotlinx.android.synthetic.main.activity_main.*
 
-class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Int, Int>() {
+class NetworkTask(
+    private val viewModelRef: WeakReference<MainViewModel>
+) : AsyncTask<File, Int, Int>() {
+
     // This runs in the UI thread.
     override fun onPreExecute() {
-        actRef.get()?.progressBar?.visibility = VISIBLE
+        viewModelRef.get()?.scoringPhase?.value = ScoringPhase.CONNECTING
     }
 
     // This runs in the background thread.
@@ -113,36 +111,31 @@ class NetworkTask(val actRef: WeakReference<Activity>) : AsyncTask<File, Int, In
         return score
     }
 
+    // This runs in the UI thread.
     override fun onProgressUpdate(vararg values: Int?) {
         val progress = values[0] ?: return
-        actRef.get()?.progressBar?.apply {
+        viewModelRef.get()?.let {
             when (progress) {
-                0 -> setIndeterminate(false)
-                -1 -> setIndeterminate(true)
+                0 -> it.scoringPhase.value = ScoringPhase.UPLOADING
+                -1 -> it.scoringPhase.value = ScoringPhase.AWAITING
             }
-            setProgress(progress)
+            it.progress.value = progress
         }
     }
 
+    // This runs in the UI thread.
     override fun onCancelled(score: Int?) {
-        actRef.get()?.progressBar?.visibility = GONE
+        viewModelRef.get()?.let { model ->
+            model.score.value = null
+            model.scoringPhase.value = ScoringPhase.INACTIVE
+        }
     }
 
     // This runs in the UI thread and gets the result of the background task.
     override fun onPostExecute(score: Int?) {
-        actRef.get()?.let {
-            it.progressBar?.visibility = GONE
-            if (score == null || score < 0) {
-                Toast.makeText(it.applicationContext, "Something went wrong.",
-                               Toast.LENGTH_LONG).show()
-                if (score != null) {
-                    it.scoreTV?.text = "?".repeat(-score)
-                } else {
-                    it.scoreTV?.text = "?!"
-                }
-            } else {
-                it.scoreTV?.text = "$score"
-            }
+        viewModelRef.get()?.let { model ->
+            model.score.value = score ?: -100
+            model.scoringPhase.value = ScoringPhase.INACTIVE
         }
     }
 }
