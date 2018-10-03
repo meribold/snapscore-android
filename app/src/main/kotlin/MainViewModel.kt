@@ -2,6 +2,9 @@ package xyz.meribold.snapscore
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
+import android.os.AsyncTask
+import java.io.File
+import java.lang.ref.WeakReference
 
 enum class ScoringPhase {
     INACTIVE, CONNECTING, UPLOADING, AWAITING
@@ -17,6 +20,14 @@ class MainViewModel() : ViewModel() {
     val scoringPhase: MutableLiveData<ScoringPhase> = MutableLiveData()
     val progress: MutableLiveData<Int> = MutableLiveData()
     val score: MutableLiveData<Int?> = MutableLiveData()
+    val networkTask: MutableLiveData<NetworkTask> = MutableLiveData()
+
+    fun kickOffScoring(photoFile: File) {
+        networkTask.value?.cancel(true)
+        networkTask.value = NetworkTask(WeakReference(this)).apply {
+            execute(photoFile)
+        }
+    }
 }
 
 // [1]: https://developer.android.com/topic/performance/threads#persisting

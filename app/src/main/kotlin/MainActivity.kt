@@ -196,11 +196,9 @@ class MainActivity : AppCompatActivity() {
         } else {
             newPhotoReceived = true
             model.score.value = null
-            kickOffScoring()
+            model.kickOffScoring(photoFile)
         }
     }
-
-    private fun kickOffScoring() = NetworkTask(WeakReference(model)).execute(photoFile)
 }
 
 private fun getImageOrientation(path: String): Int =
