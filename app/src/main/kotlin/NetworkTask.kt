@@ -42,73 +42,73 @@ class NetworkTask(
         } catch (e: IllegalArgumentException) {
             return -5
         }
-        // Verify that the certificate we got is actually for "snapscore.meribold.xyz", I
-        // think.
-        HttpsURLConnection.getDefaultHostnameVerifier().run {
-            if (!verify("snapscore.meribold.xyz", socket.session)) {
-                return -10
+
+        // The socket will be closed when this scope is exited.
+        socket.use {
+            // Verify that the certificate we got is actually for
+            // "snapscore.meribold.xyz", I think.
+            HttpsURLConnection.getDefaultHostnameVerifier().run {
+                if (!verify("snapscore.meribold.xyz", socket.session)) {
+                    return -10
+                }
             }
-        }
 
-        val oStream = try {
-            DataOutputStream(socket.getOutputStream())
-        } catch (e: IOException) {
-            return -6
-        }
-
-        val iStream = try {
-            DataInputStream(socket.getInputStream())
-        } catch (e: IOException) {
-            return -7
-        }
-
-        val numBytes: Int = image.length().toInt()
-        try {
-            oStream.writeInt(numBytes)
-        } catch (e: IOException) {
-            return -11
-        }
-
-        val imageStream = FileInputStream(image)
-        val buffer = ByteArray(4096)
-        var totalBytesRead: Int = 0
-        var progress: Int = 0
-        publishProgress(0)
-        while (true) {
-            val numBytesRead: Int = imageStream.read(buffer)
-            if (numBytesRead == -1) {
-                break
-            }
-            try {
-                oStream.write(buffer, 0, numBytesRead)
+            // "Closing [the] socket will also close the socket's `InputStream` and
+            // `OutputStream`." [8]
+            val oStream = try {
+                DataOutputStream(socket.getOutputStream())
             } catch (e: IOException) {
-                return -12
+                return -6
             }
-            totalBytesRead += numBytesRead
-            val new_progress = (100.0f * totalBytesRead / numBytes).roundToInt()
-            if (new_progress != progress) {
-                progress = new_progress
-                // "This method may take several seconds to complete [...]." [9]  What?!
-                publishProgress(progress)
+            val iStream = try {
+                DataInputStream(socket.getInputStream())
+            } catch (e: IOException) {
+                return -7
+            }
+
+            val numBytes: Int = image.length().toInt()
+            try {
+                oStream.writeInt(numBytes)
+            } catch (e: IOException) {
+                return -11
+            }
+
+            FileInputStream(image).use { imageStream ->
+                val buffer = ByteArray(4096)
+                var totalBytesRead: Int = 0
+                var progress: Int = 0
+                publishProgress(0)
+                while (true) {
+                    val numBytesRead: Int = imageStream.read(buffer)
+                    if (numBytesRead == -1) {
+                        break
+                    }
+                    try {
+                        oStream.write(buffer, 0, numBytesRead)
+                    } catch (e: IOException) {
+                        return -12
+                    }
+                    totalBytesRead += numBytesRead
+                    val new_progress = (100.0f * totalBytesRead / numBytes).roundToInt()
+                    if (new_progress != progress) {
+                        progress = new_progress
+                        // "This method may take several seconds to complete [...]." [9]
+                        // What?!
+                        publishProgress(progress)
+                    }
+                }
+            }
+            oStream.flush()
+            publishProgress(-1)
+
+            return try {
+                iStream.readInt()
+            } catch (e: EOFException) {
+                -8
+            } catch (e: IOException) {
+                -9
             }
         }
-        oStream.flush()
-        publishProgress(-1)
-
-        val score: Int = try {
-            iStream.readInt()
-        } catch (e: EOFException) {
-            return -8
-        } catch (e: IOException) {
-            return -9
-        }
-
-        // "Closing the [...] OutputStream will close the associated socket." [8].
-        oStream.close()
-        iStream.close()
-        imageStream.close()
-
-        return score
     }
 
     // This runs in the UI thread.
@@ -148,7 +148,7 @@ class NetworkTask(
 // [6]: https://codereview.stackexchange.com/q/175340
 //      "Updating the UI without leaking the context after an Android AsyncTask finishes"
 // [7]: https://developer.android.com/reference/java/lang/ref/WeakReference
-// [8]: https://developer.android.com/reference/kotlin/java/net/Socket#getOutputStream%28%29
+// [8]: https://developer.android.com/reference/kotlin/java/net/Socket#close()
 // [9]: https://developer.android.com/reference/android/os/AsyncTask.html#publishProgress(Progress...)
 // [10]: https://developer.android.com/training/articles/security-ssl#WarningsSslSocket
 // [11]: https://developer.android.com/reference/kotlin/javax/net/SocketFactory#createsocket_1
