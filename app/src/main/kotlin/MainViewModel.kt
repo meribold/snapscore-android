@@ -2,7 +2,6 @@ package xyz.meribold.snapscore
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
-import android.os.AsyncTask
 import java.io.File
 import java.lang.ref.WeakReference
 
@@ -16,11 +15,11 @@ enum class ScoringPhase {
 // or device events that are completely out of [our] control." [2]  If that were not the
 // case, the `AsyncTask` task could just hold a reference to the activity and update it
 // directly.  Woe is me.
-class MainViewModel() : ViewModel() {
+class MainViewModel : ViewModel() {
     val scoringPhase: MutableLiveData<ScoringPhase> = MutableLiveData()
     val progress: MutableLiveData<Int> = MutableLiveData()
     val score: MutableLiveData<Int?> = MutableLiveData()
-    val networkTask: MutableLiveData<NetworkTask> = MutableLiveData()
+    private val networkTask: MutableLiveData<NetworkTask> = MutableLiveData()
 
     fun kickOffScoring(photoFile: File) {
         networkTask.value?.cancel(true)

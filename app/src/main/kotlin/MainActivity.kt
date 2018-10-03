@@ -20,7 +20,6 @@ import android.view.View.VISIBLE
 import android.widget.Toast
 import java.io.File
 import java.io.IOException
-import java.lang.ref.WeakReference
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {

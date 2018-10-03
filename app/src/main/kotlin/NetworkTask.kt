@@ -57,12 +57,12 @@ class NetworkTask(
             // "Closing [the] socket will also close the socket's `InputStream` and
             // `OutputStream`." [8]
             val oStream = try {
-                DataOutputStream(socket.getOutputStream())
+                DataOutputStream(socket.outputStream)
             } catch (e: IOException) {
                 return -6
             }
             val iStream = try {
-                DataInputStream(socket.getInputStream())
+                DataInputStream(socket.inputStream)
             } catch (e: IOException) {
                 return -7
             }
@@ -76,8 +76,8 @@ class NetworkTask(
 
             FileInputStream(image).use { imageStream ->
                 val buffer = ByteArray(4096)
-                var totalBytesRead: Int = 0
-                var progress: Int = 0
+                var totalBytesRead = 0
+                var progress = 0
                 publishProgress(0)
                 while (true) {
                     val numBytesRead: Int = imageStream.read(buffer)
@@ -90,9 +90,9 @@ class NetworkTask(
                         return -12
                     }
                     totalBytesRead += numBytesRead
-                    val new_progress = (100.0f * totalBytesRead / numBytes).roundToInt()
-                    if (new_progress != progress) {
-                        progress = new_progress
+                    val newProgress = (100.0f * totalBytesRead / numBytes).roundToInt()
+                    if (newProgress != progress) {
+                        progress = newProgress
                         // "This method may take several seconds to complete [...]." [9]
                         // What?!
                         publishProgress(progress)
