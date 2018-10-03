@@ -18,7 +18,8 @@ class NetworkTask(
         viewModelRef.get()?.scoringPhase?.value = ScoringPhase.CONNECTING
     }
 
-    // This runs in the background thread.
+    // This runs in the background thread.  TODO: it would be good to check the value of
+    // `AsyncTask.isCancelled()` periodically.
     override fun doInBackground(vararg params: File): Int? {
         if (params.size != 1) {
             return -1
