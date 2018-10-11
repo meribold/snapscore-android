@@ -1,7 +1,7 @@
 # SnapScore
 
-The SnapScore Android app.  I mean, that's what will be here once I wrote it.  When it
-will be right, I don't know.  What it will be like, I don't know.
+The SnapScore Android app.  When it will be right, I don't know.  What it will be like, I
+don't know.
 
 ## TODO
 
