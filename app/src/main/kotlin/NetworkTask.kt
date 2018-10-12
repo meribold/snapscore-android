@@ -37,11 +37,11 @@ class NetworkTask(
         } catch (e: UnknownHostException) {
             return -2
         } catch (e: IOException) {
-            return -3
+            return -100
         } catch (e: SecurityException) {
-            return -4
+            return -3
         } catch (e: IllegalArgumentException) {
-            return -5
+            return -4
         }
 
         // The socket will be closed when this scope is exited.
@@ -59,19 +59,19 @@ class NetworkTask(
             val oStream = try {
                 DataOutputStream(socket.outputStream)
             } catch (e: IOException) {
-                return -6
+                return -101
             }
             val iStream = try {
                 DataInputStream(socket.inputStream)
             } catch (e: IOException) {
-                return -7
+                return -102
             }
 
             val numBytes: Int = image.length().toInt()
             try {
                 oStream.writeInt(numBytes)
             } catch (e: IOException) {
-                return -11
+                return -103
             }
 
             FileInputStream(image).use { imageStream ->
@@ -90,7 +90,7 @@ class NetworkTask(
                     try {
                         oStream.write(buffer, 0, numBytesRead)
                     } catch (e: IOException) {
-                        return -12
+                        return -104
                     }
                     totalBytesRead += numBytesRead
                     val newProgress = (100.0f * totalBytesRead / numBytes).roundToInt()
@@ -106,9 +106,9 @@ class NetworkTask(
             return try {
                 iStream.readInt()
             } catch (e: EOFException) {
-                -8
+                -5
             } catch (e: IOException) {
-                -9
+                -105
             }
         }
     }
