@@ -27,11 +27,11 @@ class NetworkTask(
         val image: File = params[0]
 
         // Create a TCP socket that uses SSL/TLS and connect to "snapscore.meribold.xyz".
-        // Based on [10].
+        // Based on [9].
         val socket: SSLSocket = try {
             SSLSocketFactory.getDefault().run {
                 // This is the `createSocket` member function inherited from
-                // `SocketFactory` [11].
+                // `SocketFactory` [10].
                 createSocket("snapscore.meribold.xyz", 50007) as SSLSocket
             }
         } catch (e: UnknownHostException) {
@@ -78,7 +78,10 @@ class NetworkTask(
                 val buffer = ByteArray(4096)
                 var totalBytesRead = 0
                 var progress = 0
-                publishProgress(0)
+                viewModelRef.get()?.let {
+                    it.scoringPhase.postValue(ScoringPhase.UPLOADING)
+                    it.progress.postValue(progress)
+                }
                 while (true) {
                     val numBytesRead: Int = imageStream.read(buffer)
                     if (numBytesRead == -1) {
@@ -93,14 +96,12 @@ class NetworkTask(
                     val newProgress = (100.0f * totalBytesRead / numBytes).roundToInt()
                     if (newProgress != progress) {
                         progress = newProgress
-                        // "This method may take several seconds to complete [...]." [9]
-                        // What?!
-                        publishProgress(progress)
+                        viewModelRef.get()?.progress?.postValue(progress)
                     }
                 }
             }
             oStream.flush()
-            publishProgress(-1)
+            viewModelRef.get()?.scoringPhase?.postValue(ScoringPhase.AWAITING)
 
             return try {
                 iStream.readInt()
@@ -109,18 +110,6 @@ class NetworkTask(
             } catch (e: IOException) {
                 -9
             }
-        }
-    }
-
-    // This runs in the UI thread.
-    override fun onProgressUpdate(vararg values: Int?) {
-        val progress = values[0] ?: return
-        viewModelRef.get()?.let {
-            when (progress) {
-                0 -> it.scoringPhase.value = ScoringPhase.UPLOADING
-                -1 -> it.scoringPhase.value = ScoringPhase.AWAITING
-            }
-            it.progress.value = progress
         }
     }
 
@@ -150,6 +139,5 @@ class NetworkTask(
 //      "Updating the UI without leaking the context after an Android AsyncTask finishes"
 // [7]: https://developer.android.com/reference/java/lang/ref/WeakReference
 // [8]: https://developer.android.com/reference/kotlin/java/net/Socket#close()
-// [9]: https://developer.android.com/reference/android/os/AsyncTask.html#publishProgress(Progress...)
-// [10]: https://developer.android.com/training/articles/security-ssl#WarningsSslSocket
-// [11]: https://developer.android.com/reference/kotlin/javax/net/SocketFactory#createsocket_1
+// [9]: https://developer.android.com/training/articles/security-ssl#WarningsSslSocket
+// [10]: https://developer.android.com/reference/kotlin/javax/net/SocketFactory#createsocket_1
