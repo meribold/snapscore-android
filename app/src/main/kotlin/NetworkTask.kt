@@ -87,6 +87,9 @@ class NetworkTask(
                     if (numBytesRead == -1) {
                         break
                     }
+                    if (isCancelled()) {
+                        return null
+                    }
                     try {
                         oStream.write(buffer, 0, numBytesRead)
                     } catch (e: IOException) {
