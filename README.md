@@ -1,4 +1,4 @@
-# SnapScore
+![Screenshot](/../media/screenshot-sony-xperia-t3-small.png?raw=true "A screenshot of the app")
 
 The SnapScore Android app.  When it will be right, I don't know.  What it will be like, I
 don't know.
