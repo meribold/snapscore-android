@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">SnapScore</string>
+    <string name="authorize_upload_dialog_title">Continue?</string>
+    <string name="inform_about_upload">
+        Your photo will be securely sent to a remote server for scoring.  It will not be
+        shared with anyone.
+    </string>
+    <string name="authorize_upload">OK</string>
+    <string name="disallow_upload">Abort</string>
 </resources>

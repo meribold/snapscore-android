@@ -3,6 +3,7 @@ package xyz.meribold.snapscore
 import android.app.Activity
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -27,7 +28,7 @@ class MainActivity : AppCompatActivity() {
     private var photoRequestMade = false
     // Did we get any photo since the app was started?
     private var newPhotoReceived = false
-    private val photoFile: File by lazy {
+    val photoFile: File by lazy {
         File(externalCacheDir, "photo.jpg").also {
             try {
                 // If the file already exists, this returns `false`.  That's fine, though.
@@ -41,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    private val model: MainViewModel by lazy {
+    val model: MainViewModel by lazy {
         // See [2].  This gives us back the same `ViewModel` object we used to have if the
         // activity is recreated after configuration changes and such stuff.
         ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -195,7 +196,14 @@ class MainActivity : AppCompatActivity() {
         } else {
             newPhotoReceived = true
             model.score.value = null
-            model.kickOffScoring(photoFile)
+            val prefs = getPreferences(Context.MODE_PRIVATE)
+            if (prefs.getBoolean("uploading_authorized", false)) {
+                model.kickOffScoring(photoFile)
+            } else {
+                // We only show this dialog once (unless the user doesn't authorize
+                // uploading).
+                AuthorizeUploadDialogFragment().show(supportFragmentManager, "dialog")
+            }
         }
     }
 }
