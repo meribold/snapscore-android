@@ -96,13 +96,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 ScoringPhase.SCORE_RECEIVED -> {
                     progressBar.visibility = GONE
-                    val resourceReference: Int? = when (model.score.value) {
-                        in -1 downTo -199 -> R.string.network_error
-                        -500 -> R.string.board_recognition_error
-                        -501 -> R.string.bad_numerals_error
-                        in -1 downTo Int.MIN_VALUE -> R.string.unknown_error
+                    val resourceReference: Int? = model.score.value?.let { value -> when {
+                        -199 <= value && value <= -1 -> R.string.network_error
+                        value == -500 -> R.string.board_recognition_error
+                        value == -501 -> R.string.bad_numerals_error
+                        value < 0 -> R.string.unknown_error
                         else -> null
-                    }
+                    }}
                     if (resourceReference != null) {
                         // TODO: should the dialog have a button for trying to connect
                         // again in case of a network error?
