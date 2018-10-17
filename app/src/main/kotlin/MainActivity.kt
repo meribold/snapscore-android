@@ -1,6 +1,7 @@
 package xyz.meribold.snapscore
 
 import android.app.Activity
+import android.app.Dialog
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
@@ -13,7 +14,9 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.media.ExifInterface
+import android.support.v4.app.DialogFragment
 import android.support.v4.content.FileProvider
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.view.View.GONE
@@ -28,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     private var photoRequestMade = false
     // Did we get any photo since the app was started?
     private var newPhotoReceived = false
-    val photoFile: File by lazy {
+    internal val photoFile: File by lazy {
         File(externalCacheDir, "photo.jpg").also {
             try {
                 // If the file already exists, this returns `false`.  That's fine, though.
@@ -42,7 +45,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    val model: MainViewModel by lazy {
+    internal val model: MainViewModel by lazy {
         // See [2].  This gives us back the same `ViewModel` object we used to have if the
         // activity is recreated after configuration changes and such stuff.
         ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -262,6 +265,32 @@ fun calculateInSampleSize(width: Int, height: Int, availableWidth: Int,
         inSampleSize *= 2
     }
     return inSampleSize
+}
+
+class AuthorizeUploadDialogFragment : DialogFragment() {
+    init {
+        // See <https://stackoverflow.com/q/8906269>.
+        setCancelable(false)
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        (activity!! as MainActivity).let { activity ->
+            with(AlertDialog.Builder(activity)) {
+                setTitle(R.string.authorize_upload_dialog_title)
+                setMessage(R.string.inform_about_upload)
+                setPositiveButton(R.string.authorize_upload) { _, _ ->
+                    activity.getPreferences(Context.MODE_PRIVATE).edit()
+                        .putBoolean("uploading_authorized", true)
+                        .apply()
+                    activity.model.kickOffScoring(activity.photoFile)
+                }
+                setNegativeButton(R.string.disallow_upload) { _, _ ->
+                    activity.finish()
+                }
+                setCancelable(false)
+                create()
+            }
+        }
 }
 
 // [1]: https://developer.android.com/topic/performance/graphics/load-bitmap
