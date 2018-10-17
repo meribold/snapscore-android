@@ -263,6 +263,7 @@ fun calculateInSampleSize(width: Int, height: Int, availableWidth: Int,
     }
     return inSampleSize
 }
+
 // [1]: https://developer.android.com/topic/performance/graphics/load-bitmap
 // [2]: https://developer.android.com/topic/libraries/architecture/viewmodel
 // [3]: https://developer.android.com/reference/android/arch/lifecycle/LiveData.html#observe
