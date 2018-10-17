@@ -11,6 +11,8 @@ available on [Google Play][2].
     Google Photos.  That's not supposed to happen.  Try using [`CaptureRequest`][3]?
 *   We crash on my Sony Xperia T3 D5103 (Android 4.4.4) after taking a photo when
     replacing `getExternalCacheDir()` with `getCacheDir()`.  Why?
+*   Link to a webpage that shows which *Take it Easy!* versions are supported when telling
+    people to check whether theirs is.
 
 [1]: http://www.burleygames.com/board-games/take-it-easy/
 [2]: https://play.google.com/store/apps/details?id=xyz.meribold.snapscore

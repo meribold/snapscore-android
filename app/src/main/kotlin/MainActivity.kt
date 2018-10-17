@@ -48,6 +48,15 @@ class MainActivity : AppCompatActivity() {
         ViewModelProviders.of(this).get(MainViewModel::class.java)
     }
 
+    fun showErrorDialog(title: Int, message: Int) =
+        ErrorDialogFragment().apply {
+            arguments = Bundle().apply {
+                putInt("title", title)
+                putInt("message", message)
+            }
+            show(supportFragmentManager, "error_dialog")
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
@@ -81,6 +90,22 @@ class MainActivity : AppCompatActivity() {
                 ScoringPhase.AWAITING -> {
                     progressBar.setIndeterminate(true)
                     progressBar.visibility = VISIBLE
+                }
+                ScoringPhase.SCORE_RECEIVED -> {
+                    progressBar.visibility = GONE
+                    val resourceReference: Int? = when (model.score.value) {
+                        in -1 downTo -199 -> R.string.network_error
+                        -500 -> R.string.board_recognition_error
+                        -501 -> R.string.bad_numerals_error
+                        in -1 downTo Int.MIN_VALUE -> R.string.unknown_error
+                        else -> null
+                    }
+                    if (resourceReference != null) {
+                        // TODO: should the dialog have a button for trying to connect
+                        // again in case of a network error?
+                        showErrorDialog(R.string.error_dialog_title, resourceReference)
+                    }
+                    model.scoringPhase.value = ScoringPhase.INACTIVE
                 }
             }
         })
@@ -202,7 +227,8 @@ class MainActivity : AppCompatActivity() {
             } else {
                 // We only show this dialog once (unless the user doesn't authorize
                 // uploading).
-                AuthorizeUploadDialogFragment().show(supportFragmentManager, "dialog")
+                AuthorizeUploadDialogFragment().show(supportFragmentManager,
+                                                     "authorize_upload_dialog")
             }
         }
     }

@@ -128,7 +128,7 @@ class NetworkTask(
     override fun onPostExecute(score: Int?) {
         viewModelRef.get()?.let { model ->
             model.score.value = score ?: -100
-            model.scoringPhase.value = ScoringPhase.INACTIVE
+            model.scoringPhase.value = ScoringPhase.SCORE_RECEIVED
         }
     }
 }

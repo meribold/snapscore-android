@@ -7,4 +7,25 @@
     </string>
     <string name="authorize_upload">OK</string>
     <string name="disallow_upload">Abort</string>
+    <string name="error_dialog_title">
+        Something went wrong
+    </string>
+    <string name="network_error">
+        Communication with the server failed or was interrupted.  Please check your
+        Internet connection.  <!-- TODO: maybe we can check their Internet connection
+        ourselves and see whether it's really a problem on their end? -->
+    </string>
+    <string name="board_recognition_error">
+        Board recognition failed.  Try to take a photo from directly above your Take It
+        Easy board.  The whole board should be visible.  Maybe check that your Take It
+        Easy version is supported.
+    </string>
+    <string name="bad_numerals_error">
+        Board or numeral recognition failed.  Try to take a photo from directly above your
+        Take It Easy board.  The whole board should be visible.  Make sure your tiles
+        aren\'t displaced much.  Maybe check that your Take It Easy version is supported.
+    </string>
+    <string name="unknown_error">
+        You weren\'t supposed to see this.  Here be dragons.
+    </string>
 </resources>
