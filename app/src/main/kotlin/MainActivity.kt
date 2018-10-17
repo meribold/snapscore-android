@@ -31,20 +31,7 @@ class MainActivity : AppCompatActivity() {
     private var photoRequestMade = false
     // Did we get any photo since the app was started?
     private var newPhotoReceived = false
-    internal val photoFile: File by lazy {
-        File(externalCacheDir, "photo.jpg").also {
-            try {
-                // If the file already exists, this returns `false`.  That's fine, though.
-                it.createNewFile()
-            } catch (e: IOException) {
-                Toast.makeText(applicationContext, "Creating file for photo failed.",
-                               Toast.LENGTH_LONG).show()
-            } catch (e: SecurityException) {
-                Toast.makeText(applicationContext, "Creating file for photo was denied.",
-                               Toast.LENGTH_LONG).show()
-            }
-        }
-    }
+    internal var photoFile: File = File("")
     internal val model: MainViewModel by lazy {
         // See [2].  This gives us back the same `ViewModel` object we used to have if the
         // activity is recreated after configuration changes and such stuff.
@@ -62,12 +49,23 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        photoFile = File(externalCacheDir, "photo.jpg")
+        if (!photoFile.exists()) {
+            // If there is no photo, this may be because our cache has been cleared at
+            // some point.  We behave as if the app was newly started and don't use
+            // `savedInstanceState` in that case.
+            savedInstanceState?.clear()
+            model.score.value = null
+        }
         photoRequestMade = savedInstanceState?.getBoolean("photoRequestMade") ?: false
         if (!photoRequestMade) {
             // Do this as early as possible because it may result in the activity being
             // destroyed.  In this case, `onCreate` will be called again and everything we
             // did so far was redundant.
             snap()
+        }
+        if (!photoFile.exists()) {
+            finish()
         }
         newPhotoReceived = savedInstanceState?.getBoolean("newPhotoReceived") ?: false
         setContentView(R.layout.activity_main)
@@ -128,7 +126,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (photoRequestMade) {
+        if (!photoFile.exists()) {
+            // If there is no photo, this may be because our cache has been cleared at
+            // some point.  We want to reset some state in that case.  The activity may or
+            // may NOT have been destroyed and recreated while the cache was cleared.
+            newPhotoReceived = false
+            model.score.value = null
+            snap()
+        } else if (photoFile.length() > 0L && photoRequestMade) {
             showBitmap(photoFile.absolutePath)
         }
     }
@@ -148,6 +153,20 @@ class MainActivity : AppCompatActivity() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         if (takePictureIntent.resolveActivity(packageManager) == null) {
             TODO()
+        }
+        photoFile = File(externalCacheDir, "photo.jpg")
+        try {
+            // If the file already exists, this returns `false`.  That's fine, though.
+            photoFile.createNewFile()
+        } catch (e: IOException) {
+            Toast.makeText(applicationContext, "Creating file for photo failed.",
+                            Toast.LENGTH_LONG).show()
+        } catch (e: SecurityException) {
+            Toast.makeText(applicationContext, "Creating file for photo was denied.",
+                            Toast.LENGTH_LONG).show()
+        }
+        if (!photoFile.exists()) {
+            finish()
         }
         // See <https://stackoverflow.com/a/44212615>.
         val photoUri: Uri = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
