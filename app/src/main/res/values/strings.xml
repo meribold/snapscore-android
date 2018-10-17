@@ -11,7 +11,7 @@
         Something went wrong
     </string>
     <string name="network_error">
-        Communication with the server failed or was interrupted.  Please check your
+        Communication with the server failed or was interrupted.  Maybe check your
         Internet connection.  <!-- TODO: maybe we can check their Internet connection
         ourselves and see whether it's really a problem on their end? -->
     </string>
