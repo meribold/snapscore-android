@@ -13,7 +13,12 @@ available on [Google Play][2].
     replacing `getExternalCacheDir()` with `getCacheDir()`.  Why?
 *   Link to a webpage that shows which *Take it Easy!* versions are supported when telling
     people to check whether theirs is.
+*   Replace `AsyncTask` with something else.  The problem is that `AsyncTask`s are
+    ["executed serially on a single background thread."][4]  This sucks when a bad photo
+    was taken by accident, as there may be some unnecessary delay before uploading starts
+    when immediately taking a new photo now.
 
 [1]: http://www.burleygames.com/board-games/take-it-easy/
 [2]: https://play.google.com/store/apps/details?id=xyz.meribold.snapscore
 [3]: https://developer.android.com/reference/android/hardware/camera2/CaptureRequest
+[4]: https://developer.android.com/reference/kotlin/android/os/AsyncTask
