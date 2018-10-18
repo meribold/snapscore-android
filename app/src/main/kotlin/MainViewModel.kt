@@ -6,7 +6,7 @@ import java.io.File
 import java.lang.ref.WeakReference
 
 enum class ScoringPhase {
-    INACTIVE, CONNECTING, UPLOADING, AWAITING, SCORE_RECEIVED
+    INACTIVE, AUTHORIZATION_NEEDED, CONNECTING, UPLOADING, AWAITING, SCORE_RECEIVED
 }
 
 // This class is all about starting an `AsyncTask` for scoring and updating the

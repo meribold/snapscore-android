@@ -80,6 +80,12 @@ class MainActivity : AppCompatActivity() {
                 ScoringPhase.INACTIVE -> {
                     progressBar.visibility = GONE
                 }
+                ScoringPhase.AUTHORIZATION_NEEDED -> {
+                    // We only show this dialog once (unless the user doesn't authorize
+                    // uploading).
+                    AuthorizeUploadDialogFragment().show(supportFragmentManager,
+                                                         "authorize_upload_dialog")
+                }
                 ScoringPhase.CONNECTING -> {
                     progressBar.setIndeterminate(true)
                     progressBar.visibility = VISIBLE
@@ -227,6 +233,8 @@ class MainActivity : AppCompatActivity() {
     }
     // [1]: https://developer.android.com/topic/performance/graphics/load-bitmap
 
+    // "You will receive this call immediately before `onResume()` when your activity is
+    // re-starting." [1]
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         assert(requestCode == 1)
         if (resultCode != Activity.RESULT_OK) {
@@ -247,13 +255,15 @@ class MainActivity : AppCompatActivity() {
             if (prefs.getBoolean("uploading_authorized", false)) {
                 model.kickOffScoring(photoFile)
             } else {
-                // We only show this dialog once (unless the user doesn't authorize
-                // uploading).
-                AuthorizeUploadDialogFragment().show(supportFragmentManager,
-                                                     "authorize_upload_dialog")
+                // Apparently it isn't safe to show a dialog here (it sometimes causes
+                // crashes).  See [2] and [3].
+                model.scoringPhase.value = ScoringPhase.AUTHORIZATION_NEEDED
             }
         }
     }
+    // [1]: https://developer.android.com/reference/android/app/Activity#onActivityResult(int,%20int,%20android.content.Intent)
+    // [2]: https://www.androiddesignpatterns.com/2013/08/fragment-transaction-commit-state-loss.html
+    // [3]: https://stackoverflow.com/q/16265733
 }
 
 private fun getImageOrientation(path: String): Int =
