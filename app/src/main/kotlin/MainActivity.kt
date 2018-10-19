@@ -311,6 +311,11 @@ class AuthorizeUploadDialogFragment : DialogFragment() {
                     activity.getPreferences(Context.MODE_PRIVATE).edit()
                         .putBoolean("uploading_authorized", true)
                         .apply()
+                    // I don't think the `scoringPhase` change done in `kickOffScoring`
+                    // necessarily happens immediately, because it's done from
+                    // `AsyncTask.onPreExecute`, which isn't called directly.  Make sure
+                    // we don't ask for authorization again if some funny stuff happens.
+                    activity.model.scoringPhase.value = ScoringPhase.INACTIVE
                     activity.model.kickOffScoring(activity.photoFile)
                 }
                 setNegativeButton(R.string.disallow_upload) { _, _ ->

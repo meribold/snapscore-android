@@ -3,7 +3,6 @@ package xyz.meribold.snapscore
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import java.io.File
-import java.lang.ref.WeakReference
 
 enum class ScoringPhase {
     INACTIVE, AUTHORIZATION_NEEDED, CONNECTING, UPLOADING, AWAITING, SCORE_RECEIVED
@@ -23,7 +22,7 @@ class MainViewModel : ViewModel() {
 
     fun kickOffScoring(photoFile: File) {
         networkTask.value?.cancel(true)
-        networkTask.value = NetworkTask(WeakReference(this)).apply {
+        networkTask.value = NetworkTask(this).apply {
             execute(photoFile)
         }
     }
