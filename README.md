@@ -1,24 +1,10 @@
 <img src="/../media/screenshot-sony-xperia-t3.png?raw=true"
      title="A screenshot of the app" width="30%" align="left" hspace="10">
 
-SnapScore is an Android app that lets you take a photo of your game board after playing
-[*Take it Easy!*][1] and will calculate the score for you.  There's a beta version
-available on [Google Play][2].
+SnapScore automates scoring of the board game [*Take It Easy*][] using computer vision.
+The user takes a photo of their game board, and SnapScore computes the score.  The Android
+app was available on Google Play from 2018 to 2023, but is now discontinued.  However, a
+basic web frontend backed by AWS Lambda is available at [snapscore.meribold.org][].
 
-## TODO
-
-*   On a Moto G4 Plus (Android 7.0, API 24) the photos we take are all available from
-    Google Photos.  That's not supposed to happen.  Try using [`CaptureRequest`][3]?
-*   We crash on my Sony Xperia T3 D5103 (Android 4.4.4) after taking a photo when
-    replacing `getExternalCacheDir()` with `getCacheDir()`.  Why?
-*   Link to a webpage that shows which *Take it Easy!* versions are supported when telling
-    people to check whether theirs is.
-*   Replace `AsyncTask` with something else.  The problem is that `AsyncTask`s are
-    ["executed serially on a single background thread."][4]  This sucks when a bad photo
-    was taken by accident, as there may be some unnecessary delay before uploading starts
-    when immediately taking a new photo now.
-
-[1]: http://www.burleygames.com/board-games/take-it-easy/
-[2]: https://play.google.com/store/apps/details?id=xyz.meribold.snapscore
-[3]: https://developer.android.com/reference/android/hardware/camera2/CaptureRequest
-[4]: https://developer.android.com/reference/kotlin/android/os/AsyncTask
+[*Take It Easy*]: https://en.wikipedia.org/wiki/Take_It_Easy_(game)
+[snapscore.meribold.org]: https://snapscore.meribold.org
